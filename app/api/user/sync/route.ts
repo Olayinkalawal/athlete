@@ -4,25 +4,37 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 
 // POST /api/user/sync - Sync Clerk user to Supabase
 export async function POST() {
+  console.log('=== USER SYNC START ===');
+  
   try {
     const { userId } = await auth();
     const user = await currentUser();
     
+    console.log('AUTH CHECK:', { hasUserId: !!userId, hasUser: !!user });
+    
     if (!userId || !user) {
+      console.error('AUTH FAILED: No userId or user object');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const supabase = createServerSupabaseClient();
     
+    console.log('SUPABASE CLIENT:', { created: !!supabase });
+    
     if (!supabase) {
+      console.error('SUPABASE CLIENT CREATION FAILED');
       return NextResponse.json({ 
-        success: true, 
-        message: 'Database not configured, using mock data' 
-      });
+        error: 'Database connection failed',
+        details: 'Check Supabase environment variables'
+      }, { status: 500 });
     }
 
     const userEmail = user.emailAddresses[0]?.emailAddress || '';
-    console.log('USER SYNC: Starting for clerk_id:', userId, 'email:', userEmail);
+    console.log('USER INFO:', { 
+      clerk_id: userId, 
+      email: userEmail,
+      name: user.fullName || user.firstName 
+    });
 
     // STEP 1: Check if user exists by Clerk ID
     let { data: existingUser, error: checkError } = await supabase
