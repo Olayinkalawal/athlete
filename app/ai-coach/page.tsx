@@ -1,5 +1,6 @@
 "use client";
 
+// Disable static generation to avoid Clerk API calls during build
 import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/header";
 import AiChat from "@/components/dashboard/ai-chat";

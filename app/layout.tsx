@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: "AI-Powered Sports Training Dashboard",
 };
 
+// Disable static generation to avoid Clerk API calls during build
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: Readonly<{
