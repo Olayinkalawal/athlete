@@ -1,0 +1,22 @@
+[[plugins]]
+package = "@netlify/plugin-nextjs"
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Force environment variables to be available at build AND runtime
+  NODE_VERSION = "20"
+
+# Ensure all environment variables are passed to the runtime
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@clerk/nextjs"]
+
+# Force regeneration
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
