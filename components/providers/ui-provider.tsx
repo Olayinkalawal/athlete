@@ -261,7 +261,14 @@ export function UiProvider({ children }: { children: ReactNode }) {
         // This ensures the user record exists before we try to fetch settings or stats
         console.log("SYNC: Starting user sync...");
         const syncRes = await fetch('/api/user/sync', { method: 'POST' });
-        console.log("SYNC: Result status:", syncRes.status);
+        const syncData = await syncRes.json();
+        console.log("SYNC: Result:", syncRes.status, syncData);
+
+        if (!syncRes.ok) {
+          console.error("SYNC: Failed!", syncData);
+          toast.error("Failed to initialize user. Please refresh the page.");
+          return; // Stop here if sync failed
+        }
 
         // 2. Load Data (Stats & Onboarding)
         // Now safe to call because user exists in DB
@@ -275,7 +282,8 @@ export function UiProvider({ children }: { children: ReactNode }) {
               // If onboarding_completed is explicitly false, show wizard
               if (data.settings && data.settings.onboarding_completed === false) {
                  console.log("ONBOARDING: Triggering wizard");
-                 setOnboardingOpen(true);
+                 // Wait a moment to ensure everything is loaded
+                 setTimeout(() => setOnboardingOpen(true), 500);
               } else {
                  console.log("ONBOARDING: Skipped. Completed:", data.settings?.onboarding_completed);
               }
@@ -287,6 +295,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
 
       } catch (error) {
         console.error("Initialization error:", error);
+        toast.error("Failed to load user data. Please refresh the page.");
       }
     };
 
