@@ -113,6 +113,16 @@ Return as a JSON object with a "drills" array containing the drill objects.`;
     // Save drills to database
     const supabase = createServerSupabaseClient();
     
+    if (!supabase) {
+      console.error('Failed to create Supabase client');
+      return NextResponse.json({
+        drills,
+        saved: 0,
+        count: drills.length,
+        error: 'Database connection failed'
+      });
+    }
+    
     // CRITICAL: Get discipline UUID from slug (drills table uses discipline_id FK)
     const { data: disciplineData, error: disciplineError } = await supabase
       .from('disciplines')

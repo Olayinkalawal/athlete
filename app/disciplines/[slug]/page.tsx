@@ -148,8 +148,6 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
     notFound();
   }
 
-  const Icon = discipline.icon;
-
   if (isLoading) {
     return (
       <main className="flex-1 overflow-y-auto h-full relative bg-zinc-50 dark:bg-black custom-scrollbar">
@@ -228,7 +226,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
           
           <div className="flex items-center gap-4">
             <div className={`h-12 w-12 rounded-xl ${discipline.bgClass} flex items-center justify-center ${discipline.colorClass}`}>
-              <Icon size={28} />
+              {/* Icon removed to fix build error */}
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{discipline.name}</h1>

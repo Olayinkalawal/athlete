@@ -449,7 +449,7 @@ export default function Home() {
                 {DISCIPLINES.map((d) => (
                   <Link key={d.slug} href={`/disciplines/${d.slug}`} className="block">
                     <div 
-                      className={`spotlight-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all text-center ${d.active ? 'ring-2 ring-indigo-500' : ''}`}
+                      className={`spotlight-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all text-center`}
                       onMouseMove={handleSpotlightMove}
                     >
                       <div className="relative z-10">

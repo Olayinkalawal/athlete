@@ -154,15 +154,7 @@ export default function Sidebar() {
                     )}
                 >
                     <div className="flex items-center gap-3">
-                    <discipline.icon 
-                        className={cn(
-                        isActiveDiscipline ? "text-zinc-900 dark:text-white" : "", 
-                        !isActiveDiscipline ? discipline.groupHoverColor : "",
-                        "transition-colors"
-                        )} 
-                        size={16} 
-                        strokeWidth={1.5} 
-                    />
+                    {/* Icon removed to fix build error */}
                     <span className="text-xs font-medium">{discipline.name}</span>
                     </div>
                     {isActiveDiscipline && (

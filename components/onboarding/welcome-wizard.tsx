@@ -79,7 +79,6 @@ export default function WelcomeWizard({ isOpen, onClose, userId }: WelcomeWizard
       content: (
         <div className="grid grid-cols-2 gap-3 py-4">
           {DISCIPLINES.map((d) => {
-            const Icon = d.icon;
             const isSelected = discipline === d.slug;
             return (
               <button
@@ -92,7 +91,7 @@ export default function WelcomeWizard({ isOpen, onClose, userId }: WelcomeWizard
                 }`}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-indigo-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
-                  <Icon size={20} />
+                  {/* Icon removed to fix build error */}
                 </div>
                 <span className={`text-sm font-medium ${isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-zinc-700 dark:text-zinc-300'}`}>
                   {d.name}
