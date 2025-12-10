@@ -131,7 +131,11 @@ export async function POST(request: Request) {
         .eq('clerk_id', userId)
         .single();
 
-      if (user && videoId) {
+      // Only save if we have both user and a valid UUID videoId
+      // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      const isValidUUID = videoId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(videoId);
+
+      if (user && isValidUUID) {
         const { data, error } = await supabase
           .from('video_analyses')
           .insert({
@@ -150,6 +154,8 @@ export async function POST(request: Request) {
         } else {
           console.error('Error saving analysis:', error);
         }
+      } else if (!isValidUUID && videoId) {
+        console.warn('Invalid UUID format for videoId, skipping database save:', videoId);
       }
     }
 
