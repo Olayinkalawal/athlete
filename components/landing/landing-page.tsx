@@ -244,7 +244,27 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6">
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6 overflow-hidden">
+        
+        {/* Background Video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+          poster="/videos/hero-poster.jpg" // Optional: thumbnail while loading
+        >
+          <source src="/videos/hero-bg.webm" type="video/webm" />
+          <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        </video>
+
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/60 z-[1]" />
+
+        {/* Optional: Gradient overlay for better text visibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70 z-[2]" />
+
         <div className="max-w-7xl mx-auto text-center relative z-10">
           
           {/* Badge */}
