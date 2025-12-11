@@ -118,6 +118,23 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
       
+      {/* Fixed Background Video - Stays in place while content scrolls */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed inset-0 w-full h-full object-cover z-0"
+      >
+        <source src="/videos/hero-bg.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark overlay for text readability across entire page */}
+      <div className="fixed inset-0 bg-black/40 z-[1]" />
+
+      {/* Gradient overlay for better text visibility */}
+      <div className="fixed inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 z-[2]" />
+
       {/* Global Flashlight Effect */}
       <div 
         className="fixed inset-0 pointer-events-none z-50 transition-opacity duration-300"
@@ -244,27 +261,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6 overflow-hidden">
-        
-        {/* Background Video */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          poster="/videos/hero-poster.jpg" // Optional: thumbnail while loading
-        >
-          <source src="/videos/hero-bg.webm" type="video/webm" />
-          <source src="/videos/hero-bg.mp4" type="video/mp4" />
-        </video>
-
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/60 z-[1]" />
-
-        {/* Optional: Gradient overlay for better text visibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70 z-[2]" />
-
+      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           
           {/* Badge */}
@@ -370,7 +367,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 px-6">
+      <section id="features" className="py-32 px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
           <AnimatedSection className="text-center mb-20">
             <span className="text-indigo-400 text-sm font-medium uppercase tracking-widest mb-4 block">Features</span>
@@ -406,7 +403,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-32 px-6 bg-zinc-950/50">
+      <section id="testimonials" className="py-32 px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
           <AnimatedSection className="text-center mb-20">
             <span className="text-emerald-400 text-sm font-medium uppercase tracking-widest mb-4 block">Athletes</span>
@@ -445,7 +442,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-6">
+      <section className="py-32 px-6 relative z-10">
         <AnimatedSection className="max-w-4xl mx-auto text-center">
           <div className="relative p-12 md:p-20 rounded-3xl border border-zinc-800 bg-gradient-to-br from-zinc-900 to-black overflow-hidden">
             {/* Background decoration */}
@@ -469,7 +466,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-zinc-900">
+      <footer className="py-12 px-6 border-t border-zinc-900 relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <Activity size={20} className="text-zinc-500" />
