@@ -2,13 +2,13 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { 
-    Activity, Zap, Target, ArrowRight, ChevronRight,
-    Shield, Cpu, Smartphone, Play, Star, Users, TrendingUp
+import {
+  Activity, Zap, Target, ArrowRight, ChevronRight,
+  Shield, Cpu, Smartphone, Play, Star, Users, TrendingUp
 } from "lucide-react";
-import { 
-    SiNike, SiAdidas, SiUnderarmour, SiPuma, 
-    SiReebok, SiNewbalance
+import {
+  SiNike, SiAdidas, SiUnderarmour, SiPuma,
+  SiReebok, SiNewbalance
 } from "react-icons/si";
 
 // Custom hook for intersection observer
@@ -37,24 +37,24 @@ function useInView(threshold = 0.1) {
 }
 
 // Animated Section Component
-function AnimatedSection({ 
-  children, 
-  className = "", 
-  delay = 0 
-}: { 
-  children: React.ReactNode; 
+function AnimatedSection({
+  children,
+  className = "",
+  delay = 0
+}: {
+  children: React.ReactNode;
   className?: string;
   delay?: number;
 }) {
   const { ref, isInView } = useInView(0.1);
-  
+
   return (
     <div
       ref={ref}
       className={`${className}`}
       style={{
-        animation: isInView 
-          ? `fadeSlideBlurIn 0.8s ease-out ${delay}ms both` 
+        animation: isInView
+          ? `fadeSlideBlurIn 0.8s ease-out ${delay}ms both`
           : 'none',
         opacity: isInView ? undefined : 0.01,
       }}
@@ -66,8 +66,8 @@ function AnimatedSection({
 
 export default function LandingPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [scrollY, setScrollY] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Mouse tracking for flashlight effect
   useEffect(() => {
@@ -78,11 +78,29 @@ export default function LandingPage() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Parallax scroll tracking
+  // Ensure video plays reliably
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    const video = videoRef.current;
+    if (video) {
+      // Explicitly set muted property (required for autoplay in some browsers)
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playbackRate = 0.5;
+
+      const playVideo = () => {
+        video.play().catch(e => {
+          console.warn("Autoplay prevented. User interaction may be required:", e);
+        });
+      };
+
+      if (video.readyState >= 3) { // HAVE_FUTURE_DATA
+        playVideo();
+      } else {
+        video.addEventListener('canplay', playVideo);
+      }
+
+      return () => video.removeEventListener('canplay', playVideo);
+    }
   }, []);
 
   const stats = [
@@ -117,26 +135,28 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200">
-      
+
       {/* Fixed Background Video - Stays in place while content scrolls */}
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         className="fixed inset-0 w-full h-full object-cover z-0"
       >
         <source src="/videos/hero-bg.mp4" type="video/mp4" />
       </video>
 
       {/* Dark overlay for text readability across entire page */}
-      <div className="fixed inset-0 bg-black/40 z-[1]" />
+      <div className="fixed inset-0 bg-black/40 z-[1] pointer-events-none" />
 
       {/* Gradient overlay for better text visibility */}
       <div className="fixed inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60 z-[2]" />
 
       {/* Global Flashlight Effect */}
-      <div 
+      <div
         className="fixed inset-0 pointer-events-none z-50 transition-opacity duration-300"
         style={{
           background: `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99, 102, 241, 0.04), transparent 40%)`,
@@ -144,19 +164,18 @@ export default function LandingPage() {
       />
 
       {/* Parallax Background with Beams */}
-      <div 
+      <div
         className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
-        style={{ transform: `translateY(${scrollY * 0.3}px)` }}
       >
         {/* Grid Pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-20"
           style={{
             backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(99,102,241,0.3) 1px, transparent 0)',
             backgroundSize: '40px 40px',
           }}
         />
-        
+
         {/* Animated Beam Lines (Noodles) */}
         <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
           <defs>
@@ -171,48 +190,48 @@ export default function LandingPage() {
               <stop offset="100%" stopColor="transparent" />
             </linearGradient>
           </defs>
-          
+
           {/* Horizontal Beams */}
-          <path 
-            d="M-100 200 Q 300 250, 600 200 T 1400 250" 
-            stroke="#1e1e2e" 
-            strokeWidth="1" 
+          <path
+            d="M-100 200 Q 300 250, 600 200 T 1400 250"
+            stroke="#1e1e2e"
+            strokeWidth="1"
             fill="none"
           />
-          <path 
-            d="M-100 200 Q 300 250, 600 200 T 1400 250" 
-            stroke="url(#beam-gradient)" 
-            strokeWidth="2" 
+          <path
+            d="M-100 200 Q 300 250, 600 200 T 1400 250"
+            stroke="url(#beam-gradient)"
+            strokeWidth="2"
             fill="none"
             className="animate-beam"
           />
-          
-          <path 
-            d="M-100 600 Q 400 550, 800 600 T 1500 550" 
-            stroke="#1e1e2e" 
-            strokeWidth="1" 
+
+          <path
+            d="M-100 600 Q 400 550, 800 600 T 1500 550"
+            stroke="#1e1e2e"
+            strokeWidth="1"
             fill="none"
           />
-          <path 
-            d="M-100 600 Q 400 550, 800 600 T 1500 550" 
-            stroke="url(#beam-gradient)" 
-            strokeWidth="2" 
+          <path
+            d="M-100 600 Q 400 550, 800 600 T 1500 550"
+            stroke="url(#beam-gradient)"
+            strokeWidth="2"
             fill="none"
             className="animate-beam"
             style={{ animationDelay: '-3s' }}
           />
-          
+
           {/* Vertical Beam */}
-          <path 
-            d="M 1100 -100 Q 1050 400, 1100 900" 
-            stroke="#1e1e2e" 
-            strokeWidth="1" 
+          <path
+            d="M 1100 -100 Q 1050 400, 1100 900"
+            stroke="#1e1e2e"
+            strokeWidth="1"
             fill="none"
           />
-          <path 
-            d="M 1100 -100 Q 1050 400, 1100 900" 
-            stroke="url(#beam-gradient-v)" 
-            strokeWidth="2" 
+          <path
+            d="M 1100 -100 Q 1050 400, 1100 900"
+            stroke="url(#beam-gradient-v)"
+            strokeWidth="2"
             fill="none"
             className="animate-beam-vertical"
           />
@@ -242,13 +261,13 @@ export default function LandingPage() {
             </div>
             <span className="text-xl font-bold tracking-tight">ATHLETE</span>
           </div>
-          
+
           <div className="hidden md:flex items-center gap-8 text-sm text-zinc-400">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#testimonials" className="hover:text-white transition-colors">Athletes</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Link href="/sign-in" className="text-sm text-zinc-400 hover:text-white transition-colors px-4 py-2">
               Sign In
@@ -263,7 +282,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center pt-24 pb-20 px-6">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          
+
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/80 border border-zinc-800 text-xs mb-8 animate-clip-in">
             <span className="relative flex h-2 w-2">
@@ -275,7 +294,7 @@ export default function LandingPage() {
           </div>
 
           {/* Main Headline with Clip Animation */}
-          <h1 
+          <h1
             className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-[0.95] animate-clip-in"
             style={{ animationDelay: '0.1s' }}
           >
@@ -286,16 +305,16 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p 
+          <p
             className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 animate-clip-in"
             style={{ animationDelay: '0.2s' }}
           >
-            AI-powered biomechanics analysis and personalized training plans. 
+            AI-powered biomechanics analysis and personalized training plans.
             Join elite athletes using computer vision to optimize every movement.
           </p>
 
           {/* CTA Buttons */}
-          <div 
+          <div
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-clip-in"
             style={{ animationDelay: '0.3s' }}
           >
@@ -312,7 +331,7 @@ export default function LandingPage() {
           </div>
 
           {/* Stats Row */}
-          <div 
+          <div
             className="flex flex-wrap justify-center gap-8 md:gap-16 animate-clip-in"
             style={{ animationDelay: '0.4s' }}
           >
@@ -338,7 +357,7 @@ export default function LandingPage() {
 
       {/* Marquee Section */}
       <section className="py-12 border-y border-zinc-900 overflow-hidden">
-        <div 
+        <div
           className="flex"
           style={{
             maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
@@ -380,7 +399,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {features.map((feature, i) => (
               <AnimatedSection key={i} delay={i * 100}>
-                <div 
+                <div
                   className="group relative p-8 rounded-2xl border border-zinc-800 bg-zinc-900/30 hover:bg-zinc-900/50 hover:border-zinc-700 transition-all duration-300 overflow-hidden spotlight-card"
                   onMouseMove={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -413,7 +432,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
               <AnimatedSection key={i} delay={i * 100}>
-                <div 
+                <div
                   className="relative p-8 rounded-2xl border border-zinc-800 bg-zinc-900/30 hover:border-zinc-700 transition-all spotlight-card"
                   onMouseMove={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -450,7 +469,7 @@ export default function LandingPage() {
               <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
               <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
             </div>
-            
+
             <div className="relative z-10">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Level Up?</h2>
               <p className="text-zinc-400 mb-10 max-w-xl mx-auto">

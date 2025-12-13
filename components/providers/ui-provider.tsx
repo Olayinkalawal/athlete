@@ -156,7 +156,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Failed to load session from database:', error);
       }
-      
+
       // Fallback to localStorage
       const storedItems = loadSessionPlanFromStorage();
       setSessionPlanItems(storedItems);
@@ -164,7 +164,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
     };
 
     loadSession();
-    
+
     // Load chat messages from localStorage
     const storedMessages = loadChatMessagesFromStorage();
     setChatMessages(storedMessages);
@@ -203,9 +203,9 @@ export function UiProvider({ children }: { children: ReactNode }) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sessions' },
         (payload: any) => {
-             toast.info("New Training Session Started ⏱️", {
-                description: payload.new.title
-             });
+          toast.info("New Training Session Started ⏱️", {
+            description: payload.new.title
+          });
         }
       )
       .subscribe();
@@ -223,15 +223,15 @@ export function UiProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoadingStats(true);
       setStatsError(null);
-      
+
       const response = await fetch('/api/progress');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch stats');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.stats) {
         setSessionStats({
           caloriesBurned: data.stats.total_calories_burned || 0,
@@ -281,11 +281,11 @@ export function UiProvider({ children }: { children: ReactNode }) {
               console.log("SETTINGS: Loaded", data.settings);
               // If onboarding_completed is explicitly false, show wizard
               if (data.settings && data.settings.onboarding_completed === false) {
-                 console.log("ONBOARDING: Triggering wizard");
-                 // Wait a moment to ensure everything is loaded
-                 setTimeout(() => setOnboardingOpen(true), 500);
+                console.log("ONBOARDING: Triggering wizard");
+                // Wait a moment to ensure everything is loaded
+                setTimeout(() => setOnboardingOpen(true), 500);
               } else {
-                 console.log("ONBOARDING: Skipped. Completed:", data.settings?.onboarding_completed);
+                console.log("ONBOARDING: Skipped. Completed:", data.settings?.onboarding_completed);
               }
             } else {
               console.error("SETTINGS: Failed to load", settingsRes.status);
@@ -308,7 +308,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const closeSidebar = () => setIsSidebarOpen(false);
   const toggleSearch = () => setIsSearchOpen((prev) => !prev);
   const clearNotifications = () => setNotifications(0);
-  
+
   const updateSessionStats = (delta: Partial<SessionStats>) => {
     setSessionStats(prev => ({
       ...prev,
@@ -324,14 +324,14 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const toggleSessionItem = async (id: string) => {
     const item = sessionPlanItems.find(i => i.id === id);
     if (!item) return;
-    
+
     const isNowChecked = !item.checked;
-    
+
     // Update local state immediately for responsiveness
     setSessionPlanItems(prev =>
       prev.map(i => i.id === id ? { ...i, checked: isNowChecked } : i)
     );
-    
+
     // Update stats
     if (isNowChecked) {
       updateSessionStats({
@@ -344,7 +344,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
         completedDrills: -1
       });
     }
-    
+
     // Sync to database if we have an active session
     if (isSessionSynced && currentSessionId) {
       try {
@@ -363,7 +363,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
     // Reset local state
     setSessionPlanItems(prev => prev.map(i => ({ ...i, checked: false })));
     toast.info("Session plan reset.");
-    
+
     // Sync each item to database
     if (isSessionSynced && currentSessionId) {
       for (const item of sessionPlanItems) {
@@ -390,7 +390,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
     };
     setSessionPlanItems(prev => [...prev, newItem]);
     toast.success("Custom drill added to plan");
-    
+
     // Sync to database
     if (isSessionSynced && currentSessionId) {
       try {
@@ -399,7 +399,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ label, xp_reward: 20 })
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           // Replace temp ID with real database ID
@@ -420,7 +420,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: 'Training Session' })
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.session && data.items) {
@@ -491,10 +491,9 @@ export function UiProvider({ children }: { children: ReactNode }) {
     >
       {children}
       {user && (
-        <WelcomeWizard 
-          isOpen={onboardingOpen} 
+        <WelcomeWizard
+          isOpen={onboardingOpen}
           onClose={() => setOnboardingOpen(false)}
-          userId={user.id} 
         />
       )}
     </UiContext.Provider>

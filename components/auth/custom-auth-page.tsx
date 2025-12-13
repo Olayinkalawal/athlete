@@ -143,9 +143,12 @@ export default function CustomAuthPage() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-      
+
+      {/* Clerk CAPTCHA Container - Required for Bot Protection */}
+      <div id="clerk-captcha" />
+
       {/* Flashlight Effect */}
-      <div 
+      <div
         className="fixed inset-0 pointer-events-none z-0"
         style={{
           background: `radial-gradient(800px circle at ${mousePos.x}px ${mousePos.y}px, rgba(99, 102, 241, 0.06), transparent 40%)`,
@@ -156,16 +159,16 @@ export default function CustomAuthPage() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px]" />
-        
+
         {/* Grid Pattern */}
-        <div 
+        <div
           className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(99,102,241,0.3) 1px, transparent 0)',
             backgroundSize: '40px 40px',
           }}
         />
-        
+
         {/* Animated Beam */}
         <svg className="absolute inset-0 w-full h-full opacity-30" preserveAspectRatio="none">
           <defs>
@@ -175,10 +178,10 @@ export default function CustomAuthPage() {
               <stop offset="100%" stopColor="transparent" />
             </linearGradient>
           </defs>
-          <path 
-            d="M-100 300 Q 400 250, 800 300 T 1600 250" 
-            stroke="url(#auth-beam)" 
-            strokeWidth="2" 
+          <path
+            d="M-100 300 Q 400 250, 800 300 T 1600 250"
+            stroke="url(#auth-beam)"
+            strokeWidth="2"
             fill="none"
             className="animate-beam"
           />
@@ -186,7 +189,7 @@ export default function CustomAuthPage() {
       </div>
 
       {/* Auth Card */}
-      <div 
+      <div
         className="relative z-10 w-full max-w-md"
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
@@ -195,15 +198,15 @@ export default function CustomAuthPage() {
         }}
       >
         <div className="relative bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-2xl p-8 shadow-2xl overflow-hidden spotlight-card">
-          
+
           {/* Card Flashlight Effect */}
-          <div 
+          <div
             className="absolute inset-0 pointer-events-none rounded-2xl"
             style={{
               background: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.1), transparent 40%)',
             }}
           />
-          
+
           {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-8 animate-fadeIn">
             <div className="relative">
@@ -223,8 +226,8 @@ export default function CustomAuthPage() {
                   {mode === "signin" ? "Welcome back" : "Create your account"}
                 </h1>
                 <p className="text-zinc-400 text-sm">
-                  {mode === "signin" 
-                    ? "Sign in to continue your training journey" 
+                  {mode === "signin"
+                    ? "Sign in to continue your training journey"
                     : "Start your AI-powered training experience"}
                 </p>
               </div>
@@ -274,7 +277,7 @@ export default function CustomAuthPage() {
 
               {/* Email Form */}
               <form onSubmit={mode === "signin" ? handleSignIn : handleSignUp} className="space-y-4">
-                
+
                 {mode === "signup" && (
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium text-zinc-400">Name</label>
@@ -457,6 +460,7 @@ export default function CustomAuthPage() {
           pointer-events: none;
         }
       `}</style>
+
     </div>
   );
 }

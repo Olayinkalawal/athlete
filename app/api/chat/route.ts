@@ -1,23 +1,26 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Create an OpenAI API client (that's edge friendly!)
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy-key',
-});
-
-// Set the runtime to edge for best performance
-export const runtime = 'edge';
+// Lazy initialization
+let openaiClient: OpenAI | null = null;
+function getOpenAI() {
+  if (!openaiClient && process.env.OPENAI_API_KEY) {
+    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openaiClient;
+}
 
 export async function POST(req: Request) {
   try {
     const { messages, stats } = await req.json();
 
+    const openai = getOpenAI();
+
     // Check for API Key
-    if (!process.env.OPENAI_API_KEY) {
+    if (!openai) {
       // Return a simulated response if no key is present
       return new NextResponse(
-        "I'm ready to help! To make me fully functional, please add an OPENAI_API_KEY to your environment variables. For now, I can tell you that your training consistency looks great!", 
+        "I'm ready to help! To make me fully functional, please add an OPENAI_API_KEY to your environment variables. For now, I can tell you that your training consistency looks great!",
         { status: 200 }
       );
     }
@@ -43,9 +46,9 @@ export async function POST(req: Request) {
       stream: true,
       messages: [
         { role: 'system', content: systemPrompt },
-        ...messages.map((m: any) => ({ 
-            role: m.role === 'bot' ? 'assistant' : m.role, 
-            content: m.text || m.content 
+        ...messages.map((m: any) => ({
+          role: m.role === 'bot' ? 'assistant' : m.role,
+          content: m.text || m.content
         })),
       ],
     });
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
     return new NextResponse(stream);
   } catch (error: any) {
     console.error('Chat API Error:', error);
-    
+
     // Return the actual error message for debugging
     return NextResponse.json(
       { error: error.message || 'Error communicating with OpenAI' },

@@ -16,15 +16,15 @@ const SUGGESTED_PROMPTS = [
 
 export default function AiChat() {
   // Use global context for message persistence
-  const { 
-    sessionStats, 
-    chatMessages, 
-    addChatMessage, 
-    updateChatMessage, 
-    isChatTyping, 
-    setChatTyping 
+  const {
+    sessionStats,
+    chatMessages,
+    addChatMessage,
+    updateChatMessage,
+    isChatTyping,
+    setChatTyping
   } = useUi();
-  
+
   const [inputValue, setInputValue] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(chatMessages.length > 0);
@@ -66,7 +66,7 @@ export default function AiChat() {
           "Nice job! Ready for another challenge?"
         ];
         const msg = praises[Math.floor(Math.random() * praises.length)];
-        
+
         const botMessage: ChatMessage = {
           id: Date.now().toString(),
           role: 'bot',
@@ -103,6 +103,7 @@ export default function AiChat() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           messages: [...chatMessages, userMsg].map(m => ({ role: m.role, content: m.text })),
           stats: sessionStats
@@ -122,7 +123,7 @@ export default function AiChat() {
         text: '',
         timestamp: 'Just now'
       };
-      
+
       addChatMessage(botMsg);
       setChatTyping(false);
 
@@ -134,14 +135,14 @@ export default function AiChat() {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         const chunkValue = decoder.decode(value, { stream: !done });
-        
+
         updateChatMessage(botMsgId, chunkValue);
       }
 
     } catch (error: any) {
       console.error('Chat error:', error);
       setChatTyping(false);
-      
+
       const errorMsg: ChatMessage = {
         id: Date.now().toString(),
         role: 'bot',
@@ -159,7 +160,7 @@ export default function AiChat() {
   return (
     <ScrollReveal className={`rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 flex flex-col shadow-sm relative overflow-hidden transition-all duration-300 ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-full'}`}>
       {isExpanded && <div className="fixed inset-0 bg-black/60 -z-10" onClick={() => setIsExpanded(false)} />}
-      
+
       {/* Header */}
       <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex justify-between items-center backdrop-blur-sm">
         <div className="flex items-center gap-2">
@@ -174,7 +175,7 @@ export default function AiChat() {
 
       {/* Chat Area */}
       <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto space-y-4 text-xs bg-zinc-50/50 dark:bg-transparent">
-        
+
         {/* Welcome message when no interaction yet */}
         {!hasInteracted && chatMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full py-6 text-center">
@@ -187,7 +188,7 @@ export default function AiChat() {
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-4 max-w-[200px]">
               I'm Nova, your AI coach. How can I help you train smarter today?
             </p>
-            
+
             {/* Suggested prompt chips */}
             <div className="flex flex-wrap gap-2 justify-center">
               {SUGGESTED_PROMPTS.map((prompt) => (
@@ -202,17 +203,16 @@ export default function AiChat() {
             </div>
           </div>
         )}
-        
+
         {/* Messages */}
         {chatMessages.map((msg) => (
           <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
             <div className={`h-6 w-6 rounded-full flex-shrink-0 flex items-center justify-center border ${msg.role === 'bot' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-500 dark:text-indigo-400' : 'bg-zinc-200 dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700'}`}>
               {msg.role === 'bot' ? <Bot size={14} /> : <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400">ME</span>}
             </div>
-            <div className={`p-3 rounded-2xl shadow-sm max-w-[85%] leading-relaxed ${
-                msg.role === 'bot' 
-                  ? 'bg-zinc-200 dark:bg-zinc-800 rounded-tl-none border border-zinc-300 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300' 
-                  : 'bg-indigo-600 text-white rounded-tr-none shadow-md'
+            <div className={`p-3 rounded-2xl shadow-sm max-w-[85%] leading-relaxed ${msg.role === 'bot'
+                ? 'bg-zinc-200 dark:bg-zinc-800 rounded-tl-none border border-zinc-300 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300'
+                : 'bg-indigo-600 text-white rounded-tr-none shadow-md'
               }`}>
               {msg.text}
             </div>
@@ -239,12 +239,12 @@ export default function AiChat() {
       {/* Input */}
       <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800 backdrop-blur-sm">
         <form onSubmit={handleSendMessage} className="relative flex items-center">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-3 pr-10 py-2.5 text-xs text-zinc-700 dark:text-zinc-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all" 
-            placeholder="Ask Coach Nova..." 
+            className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg pl-3 pr-10 py-2.5 text-xs text-zinc-700 dark:text-zinc-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 placeholder-zinc-400 dark:placeholder-zinc-600 transition-all"
+            placeholder="Ask Coach Nova..."
           />
           <button type="submit" className="absolute right-2 p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-indigo-500 dark:text-indigo-400 transition-colors disabled:opacity-50" disabled={!inputValue.trim()}>
             <SendHorizontal size={14} />
