@@ -79,33 +79,34 @@ export default function WelcomeWizard({ isOpen, onClose }: WelcomeWizardProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="relative w-full max-w-4xl mx-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden min-h-[520px] flex flex-col"
+        className="relative w-full max-w-md md:max-w-2xl lg:max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
         >
-          <X className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+          <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
         </button>
 
         {/* Skip button */}
         <button
           onClick={skipTour}
           disabled={isSubmitting}
-          className="absolute top-4 left-4 z-10 flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-zinc-200 dark:border-zinc-700 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all shadow-sm disabled:opacity-50"
+          className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm border border-zinc-200 dark:border-zinc-700 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all shadow-sm disabled:opacity-50"
         >
-          <SkipForward className="w-4 h-4" />
-          Skip Tour
+          <SkipForward className="w-3 h-3" />
+          <span className="hidden sm:inline">Skip Tour</span>
+          <span className="sm:hidden">Skip</span>
         </button>
 
         {/* Slide Image */}
-        <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900">
+        <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-800 dark:to-zinc-900 flex-shrink-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={tourIndex}
@@ -127,31 +128,31 @@ export default function WelcomeWizard({ isOpen, onClose }: WelcomeWizardProps) {
         </div>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between p-6 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-t border-zinc-200 dark:border-zinc-800">
           {/* Back button */}
           <button
             onClick={prevTourSlide}
             disabled={tourIndex === 0}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium border transition-all ${tourIndex === 0
+            className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 rounded-lg text-sm font-medium border transition-all ${tourIndex === 0
               ? "opacity-40 cursor-not-allowed border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500"
               : "border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-500"
               }`}
           >
-            <ChevronLeft className="w-5 h-5" />
-            Back
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Back</span>
           </button>
 
           {/* Progress dots */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {TOUR_SLIDES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goToDot(i)}
-                className={`w-2 h-2 rounded-full transition-all ${i === tourIndex
-                  ? "w-6 bg-indigo-500"
+                className={`h-1.5 rounded-full transition-all ${i === tourIndex
+                  ? "w-4 sm:w-6 bg-indigo-500"
                   : i < tourIndex
-                    ? "bg-indigo-300"
-                    : "bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400"
+                    ? "w-1.5 bg-indigo-300"
+                    : "w-1.5 bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400"
                   }`}
               />
             ))}
@@ -162,17 +163,17 @@ export default function WelcomeWizard({ isOpen, onClose }: WelcomeWizardProps) {
             <button
               onClick={handleStartTraining}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+              className="flex items-center gap-1 sm:gap-2 px-4 sm:px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg text-sm font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50"
             >
-              {isSubmitting ? "Starting..." : "Start Training"}
+              {isSubmitting ? "..." : <><span className="hidden sm:inline">Start Training</span><span className="sm:hidden">Start</span></>}
             </button>
           ) : (
             <button
               onClick={nextTourSlide}
-              className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+              className="flex items-center gap-1 sm:gap-2 px-4 sm:px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg"
             >
-              Next
-              <ChevronRight className="w-5 h-5" />
+              <span className="hidden sm:inline">Next</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           )}
         </div>
