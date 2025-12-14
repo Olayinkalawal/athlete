@@ -161,7 +161,7 @@ export default function Header() {
         </button>
 
         {/* Guide Tour Button */}
-        <StartTourButton variant="icon" className="hidden md:flex" />
+        <StartTourButton variant="icon" />
 
         <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 mx-1 hidden md:block"></div>
 
