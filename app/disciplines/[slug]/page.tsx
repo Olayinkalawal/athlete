@@ -43,9 +43,9 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
   const [completions, setCompletions] = useState<Record<string, DrillCompletion>>({});
   const [completingDrill, setCompletingDrill] = useState<string | null>(null);
   const { updateSessionStats, refetchStats } = useUi();
-  
+
   const discipline = DISCIPLINES.find(d => d.slug === slug);
-  
+
   // Fetch drills from database
   const fetchDrills = useCallback(async () => {
     try {
@@ -53,12 +53,12 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
         fetch(`/api/drills?discipline=${slug}`),
         fetch('/api/drills/complete')
       ]);
-      
+
       if (drillsRes.ok) {
         const data = await drillsRes.json();
         setDrills(data.drills || []);
       }
-      
+
       if (completionsRes.ok) {
         const data = await completionsRes.json();
         setCompletions(data.completions || {});
@@ -67,7 +67,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
       console.error('Failed to fetch drills:', error);
     }
   }, [slug]);
-  
+
   // Initial load
   useEffect(() => {
     const loadData = async () => {
@@ -76,28 +76,28 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
     };
     loadData();
   }, [fetchDrills]);
-  
+
   // Handle drill completion
   const [disappearingDrills, setDisappearingDrills] = useState<Set<string>>(new Set());
-  
+
   const handleCompleteDrill = async (drillId: string) => {
     if (completingDrill) return; // Prevent double-clicks
-    
+
     setCompletingDrill(drillId);
-    
+
     try {
       const res = await fetch('/api/drills/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ drillId, timeSpentSeconds: 900 }) // Assume 15 min
       });
-      
+
       if (res.ok) {
         const data = await res.json();
-        
+
         // Trigger disappearing animation
         setDisappearingDrills(prev => new Set(prev).add(drillId));
-        
+
         // Update local completions
         setCompletions(prev => ({
           ...prev,
@@ -106,21 +106,21 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
             count: (prev[drillId]?.count || 0) + 1
           }
         }));
-        
+
         // Update local stats for immediate feedback
         updateSessionStats({
           completedDrills: 1,
           totalXp: data.xpEarned,
           caloriesBurned: Math.floor(Math.random() * 30) + 20
         });
-        
+
         // Refresh stats from server
         await refetchStats();
-        
+
         toast.success(`Drill Complete! 🎉`, {
           description: `+${data.xpEarned} XP earned for "${data.message.replace('Completed "', '').replace('"', '')}"`
         });
-        
+
         // If custom drill was deleted, remove from local state after animation
         if (data.customDrillDeleted) {
           setTimeout(() => {
@@ -143,7 +143,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
       setCompletingDrill(null);
     }
   };
-  
+
   if (!discipline) {
     notFound();
   }
@@ -168,7 +168,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
               <Skeleton className="h-4 w-28" />
             </div>
           </div>
-          
+
           {/* Main grid skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
@@ -210,59 +210,61 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
   }
 
   return (
-    <main className="flex-1 overflow-y-auto h-full relative bg-zinc-50 dark:bg-black custom-scrollbar">
+    <main id="main-scroll" className="flex-1 overflow-y-auto h-full relative bg-zinc-50 dark:bg-black custom-scrollbar">
       <Header />
-      
+
       <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-6">
         {/* Page Header */}
         <ScrollReveal className="space-y-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
           >
             <ArrowLeft size={12} />
             Back to Overview
           </Link>
-          
+
           <div className="flex items-center gap-4">
-            <div className={`h-12 w-12 rounded-xl ${discipline.bgClass} flex items-center justify-center ${discipline.colorClass}`}>
-              {/* Icon removed to fix build error */}
+            <div className={`h-12 w-12 rounded-xl ${discipline.bgClass} flex items-center justify-center`}>
+              <discipline.Icon className={discipline.colorClass} size={24} />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">{discipline.name}</h1>
               <p className="text-zinc-500 text-sm">{discipline.description}</p>
             </div>
           </div>
-          
+
           {/* Stats Row */}
           <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-              <Users size={14} />
-              <span>{discipline.count} athletes</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
               <BarChart size={14} />
-              <span>{drills.length || discipline.drills?.length || 0} drills available</span>
+              <span>{drills.length} drills available</span>
             </div>
+            {Object.keys(completions).length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <Check size={14} />
+                <span>{Object.values(completions).reduce((sum, c) => sum + c.count, 0)} completions</span>
+              </div>
+            )}
           </div>
         </ScrollReveal>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
+
           {/* Main Content Section */}
           <div className="lg:col-span-8 space-y-6">
-            
+
             {/* Video Player with AI Analysis */}
-            <VideoPlayer 
+            <VideoPlayer
               discipline={slug}
               initialVideoId={initialVideoId || undefined}
               initialAnalysisId={initialAnalysisId || undefined}
               onDrillsGenerated={fetchDrills}
             />
-            
+
             {/* Drills Section */}
-            <ScrollReveal>
+            <ScrollReveal data-tour="discipline-drills">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-medium text-zinc-900 dark:text-white">Available Drills</h2>
                 {Object.keys(completions).length > 0 && (
@@ -271,7 +273,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
                   </span>
                 )}
               </div>
-              
+
               {drills.length > 0 ? (
                 <div className="drill-grid grid grid-cols-1 md:grid-cols-2 gap-4">
                   {drills.map((drill) => (
@@ -296,7 +298,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
                 // Fallback to static drills if database drills not available
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {discipline.drills?.map((drill, i) => (
-                    <div 
+                    <div
                       key={i}
                       className="spotlight-card group p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm"
                       onMouseMove={handleSpotlightMove}
@@ -309,7 +311,7 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
                             <span className="flex items-center gap-1"><BarChart size={10} /> +{15 + (i * 5)} XP</span>
                           </div>
                         </div>
-                        <button 
+                        <button
                           onClick={() => toast.info(`Database drills not configured. Run the SQL schema in Supabase.`)}
                           className="h-8 w-8 rounded-full bg-zinc-400 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all"
                         >
@@ -321,23 +323,23 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
                 </div>
               )}
             </ScrollReveal>
-            
+
             {/* Quick Start */}
             <ScrollReveal delay={100}>
               <div className="spotlight-card p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-gradient-to-br from-indigo-50 dark:from-indigo-900/20 to-zinc-50 dark:to-zinc-900/20 shadow-sm" onMouseMove={handleSpotlightMove}>
                 <div className="flex items-center justify-between relative z-10">
-                <div>
-                  <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-1">Ready to train?</h3>
-                  <p className="text-xs text-zinc-500">Start a full {discipline.name} session with AI coaching</p>
+                  <div>
+                    <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-1">Ready to train?</h3>
+                    <p className="text-xs text-zinc-500">Start a full {discipline.name} session with AI coaching</p>
+                  </div>
+                  <Link
+                    href="/ai-coach"
+                    className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-black text-xs font-medium rounded-lg hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-all flex items-center gap-2 active:scale-95"
+                  >
+                    <Play size={14} />
+                    Start Session
+                  </Link>
                 </div>
-                <button 
-                  onClick={() => toast.success(`Starting ${discipline.name} training session...`)}
-                  className="px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-black text-xs font-medium rounded-lg hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-all flex items-center gap-2 active:scale-95"
-                >
-                  <Play size={14} />
-                  Start Session
-                </button>
-              </div>
               </div>
             </ScrollReveal>
           </div>
@@ -345,24 +347,28 @@ export default function DisciplinePage({ params }: { params: Promise<{ slug: str
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-4">
             <SessionPlan />
-            
+
             {/* Discipline Stats */}
             <ScrollReveal>
               <div className="spotlight-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 shadow-sm" onMouseMove={handleSpotlightMove}>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3 relative z-10">Your Progress</h3>
                 <div className="space-y-3 relative z-10">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-zinc-500">Sessions Completed</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white">24</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-zinc-500">Avg. Accuracy</span>
-                  <span className="text-sm font-medium text-emerald-500 dark:text-emerald-400">87%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-zinc-500">Total Time</span>
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white">12h 30m</span>
-                </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-zinc-500">Drills Completed</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                      {Object.values(completions).reduce((sum, c) => sum + c.count, 0)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-zinc-500">Unique Drills</span>
+                    <span className="text-sm font-medium text-emerald-500 dark:text-emerald-400">
+                      {Object.keys(completions).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-zinc-500">Available</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">{drills.length}</span>
+                  </div>
                 </div>
               </div>
             </ScrollReveal>

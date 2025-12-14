@@ -29,8 +29,8 @@ export async function GET(req: Request) {
                 created_by,
                 disciplines!inner(slug, name)
             `)
-            .eq('is_custom', true) // ONLY custom drills
-            .not('is_custom', 'is', null) // Exclude NULL values (generic drills)
+            // Show ALL drills: seeded (is_custom=null) + custom (is_custom=true)
+            .order('is_custom', { ascending: false, nullsFirst: false }) // Custom first
             .order('created_at', { ascending: false });
 
         // Filter by discipline if provided

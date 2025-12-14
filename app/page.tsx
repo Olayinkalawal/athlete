@@ -12,6 +12,7 @@ import Header from "@/components/layout/header";
 const AiChat = lazy(() => import("@/components/dashboard/ai-chat"));
 const SessionPlan = lazy(() => import("@/components/dashboard/session-plan"));
 const DisciplineCard = lazy(() => import("@/components/dashboard/discipline-card"));
+const WeeklyPlanSection = lazy(() => import("@/components/dashboard/weekly-plan"));
 
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { NoAnalysesEmpty } from "@/components/ui/empty-state";
@@ -103,52 +104,52 @@ export default function Home() {
         setIsLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-        if (mainScrollRef.current && parallaxBgRef.current) {
-            const scrollTop = mainScrollRef.current.scrollTop;
-            parallaxBgRef.current.style.transform = `translateY(${scrollTop * 0.3}px)`;
-        }
+      if (mainScrollRef.current && parallaxBgRef.current) {
+        const scrollTop = mainScrollRef.current.scrollTop;
+        parallaxBgRef.current.style.transform = `translateY(${scrollTop * 0.3}px)`;
+      }
     };
 
     const scrollContainer = mainScrollRef.current;
     if (scrollContainer) {
-        scrollContainer.addEventListener('scroll', handleScroll);
+      scrollContainer.addEventListener('scroll', handleScroll);
     }
 
     return () => {
-        if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScroll);
+      if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   const handleShare = async () => {
     try {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success("Dashboard link copied to clipboard!");
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Dashboard link copied to clipboard!");
     } catch (err) {
-        toast.error("Failed to copy link");
+      toast.error("Failed to copy link");
     }
   };
 
   const stats = progressData?.stats || { totalXp: 0, currentStreak: 0, totalDrills: 0, level: 1 };
   const lastDisciplineData = DISCIPLINES.find(d => d.slug === lastDiscipline) || DISCIPLINES[0];
-  
+
   // Calculate weekly progress from API data (with fallback)
   const weeklyGoal = progressData?.weeklyProgress?.goal || 5;
   const weeklyProgress = progressData?.weeklyProgress?.current || 0;
-  
+
   // Auto-rotate carousel (always active for dynamic Overview)
   useEffect(() => {
     if (isCarouselPaused) return;
-    
+
     const interval = setInterval(() => {
       setCarouselIndex(prev => (prev + 1) % DISCIPLINES.length);
     }, 4000); // Rotate every 4 seconds
-    
+
     return () => clearInterval(interval);
   }, [isCarouselPaused]);
 
@@ -174,9 +175,9 @@ export default function Home() {
       </div>
 
       <Header />
-      
+
       <div className="content-mask p-4 md:p-8 max-w-[1400px] mx-auto space-y-6 z-10 relative">
-        
+
         {isLoading ? (
           /* Loading Skeleton UI */
           <div className="space-y-6 animate-in fade-in">
@@ -191,13 +192,13 @@ export default function Home() {
                 <StatCardSkeleton />
               </div>
             </div>
-            
+
             {/* Main Grid skeleton */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-8 space-y-6">
                 {/* Continue Training skeleton */}
                 <Skeleton className="h-40 rounded-2xl" />
-                
+
                 {/* AI Analyses skeleton */}
                 <div className="bg-white dark:bg-zinc-900/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800">
                   <Skeleton className="h-4 w-40 mb-4" />
@@ -206,7 +207,7 @@ export default function Home() {
                     <Skeleton className="h-16 rounded-lg" />
                   </div>
                 </div>
-                
+
                 {/* Drills skeleton */}
                 <div className="bg-white dark:bg-zinc-900/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800">
                   <Skeleton className="h-4 w-36 mb-4" />
@@ -217,7 +218,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="lg:col-span-4 space-y-6">
                 <ChatSkeleton />
                 <SessionPlanSkeleton />
@@ -225,255 +226,272 @@ export default function Home() {
             </div>
           </div>
         ) : (
-        /* Actual Content */
-        <>
-        {/* Welcome + Compact Stats */}
-        <ScrollReveal className="space-y-4">
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-            <div className="space-y-1">
-              <p className="text-xs text-zinc-500 flex items-center gap-1">
-                <Calendar size={12} /> 
-                {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}
-              </p>
-              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-                Welcome Back, {user?.firstName || 'Athlete'}
-              </h1>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <button onClick={handleShare} className="px-3 py-2 text-xs font-medium bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-sm active:scale-95">
-                <Share2 size={14} /> Share
-              </button>
-              <button onClick={() => router.push('/settings')} className="px-3 py-2 text-xs font-medium bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-sm active:scale-95">
-                <Settings2 size={14} /> Settings
-              </button>
-            </div>
-          </div>
+          /* Actual Content */
+          <>
+            {/* Welcome + Compact Stats */}
+            <ScrollReveal className="space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-xs text-zinc-500 flex items-center gap-1">
+                    <Calendar size={12} />
+                    {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}
+                  </p>
+                  <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                    Welcome Back, {user?.firstName || 'Athlete'}
+                  </h1>
+                </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Level Card */}
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl p-4 text-white shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] text-white/70 uppercase tracking-wide">Level</p>
-                  <p className="text-2xl font-bold">{stats.level}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-medium">{stats.totalXp.toLocaleString()}</p>
-                  <p className="text-[10px] text-white/70">XP</p>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={handleShare} className="px-3 py-2 text-xs font-medium bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-sm active:scale-95">
+                    <Share2 size={14} /> Share
+                  </button>
+                  <button onClick={() => router.push('/settings')} className="px-3 py-2 text-xs font-medium bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 rounded-md border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-sm active:scale-95">
+                    <Settings2 size={14} /> Settings
+                  </button>
                 </div>
               </div>
-            </div>
-            
-            {/* Streak Card */}
-            <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                  <Flame className="text-orange-500" size={20} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Streak</p>
-                  <p className="text-lg font-bold text-zinc-900 dark:text-white">{stats.currentStreak} <span className="text-xs font-normal text-zinc-500">days</span></p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Drills Card */}
-            <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                  <Target className="text-emerald-500" size={20} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Drills Done</p>
-                  <p className="text-lg font-bold text-zinc-900 dark:text-white">{stats.totalDrills}</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Weekly Goal Card */}
-            <Link 
-              href="/progress" 
-              className="spotlight-card group bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors"
-              onMouseMove={handleSpotlightMove}
-            >
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10">
-                    <svg className="w-10 h-10 -rotate-90">
-                      <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="none" className="text-zinc-200 dark:text-zinc-700" />
-                      <circle 
-                        cx="20" cy="20" r="16" 
-                        stroke="currentColor" 
-                        strokeWidth="4" 
-                        fill="none" 
-                        strokeLinecap="round"
-                        strokeDasharray={`${(weeklyProgress / weeklyGoal) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
-                        className="text-indigo-500 transition-all duration-500"
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-900 dark:text-white">
-                      {weeklyProgress}/{weeklyGoal}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-zinc-500 uppercase tracking-wide">This Week</p>
-                    <p className="text-lg font-bold text-zinc-900 dark:text-white">Sessions</p>
+
+              {/* Stats Grid */}
+              <div data-tour="stats-overview" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {/* Level Card */}
+                <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl p-4 text-white shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] text-white/70 uppercase tracking-wide">Level</p>
+                      <p className="text-2xl font-bold">{stats.level}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium">{stats.totalXp.toLocaleString()}</p>
+                      <p className="text-[10px] text-white/70">XP</p>
+                    </div>
                   </div>
                 </div>
-                <ArrowRight className="text-zinc-400 group-hover:text-indigo-500 transition-colors" size={16} />
-              </div>
-            </Link>
-          </div>
-        </ScrollReveal>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Left Column */}
-          <div className="lg:col-span-8 space-y-6">
-            
-            {/* Continue Training - Auto-rotating carousel */}
-            <ScrollReveal delay={50}>
-              <Link 
-                href={`/disciplines/${DISCIPLINES[carouselIndex].slug}`}
-                className="block group"
-                onMouseEnter={() => setIsCarouselPaused(true)}
-                onMouseLeave={() => setIsCarouselPaused(false)}
-              >
-                <div className="spotlight-card relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 p-6 shadow-xl hover:shadow-2xl transition-all border border-zinc-200 dark:border-zinc-700" onMouseMove={handleSpotlightMove}>
-                  <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/10 dark:from-indigo-600/20 to-transparent" />
-                  
-                  {/* Content with fade transition */}
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
-                        Start Training
-                      </p>
-                      {/* Carousel dots */}
-                      <div className="flex items-center gap-1.5">
-                        {DISCIPLINES.map((_, i) => (
-                          <div 
-                            key={i} 
-                            className={`w-1.5 h-1.5 rounded-full transition-all ${i === carouselIndex ? 'bg-indigo-500 dark:bg-indigo-400 w-3' : 'bg-zinc-300 dark:bg-zinc-600'}`}
+                {/* Streak Card */}
+                <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                      <Flame className="text-orange-500" size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Streak</p>
+                      <p className="text-lg font-bold text-zinc-900 dark:text-white">{stats.currentStreak} <span className="text-xs font-normal text-zinc-500">days</span></p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Drills Card */}
+                <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <Target className="text-emerald-500" size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wide">Drills Done</p>
+                      <p className="text-lg font-bold text-zinc-900 dark:text-white">{stats.totalDrills}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Weekly Goal Card */}
+                <Link
+                  href="/progress"
+                  className="spotlight-card group bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors"
+                  onMouseMove={handleSpotlightMove}
+                >
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-10 h-10">
+                        <svg className="w-10 h-10 -rotate-90">
+                          <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="4" fill="none" className="text-zinc-200 dark:text-zinc-700" />
+                          <circle
+                            cx="20" cy="20" r="16"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeDasharray={`${(weeklyProgress / weeklyGoal) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
+                            className="text-indigo-500 transition-all duration-500"
                           />
-                        ))}
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-900 dark:text-white">
+                          {weeklyProgress}/{weeklyGoal}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-wide">This Week</p>
+                        <p className="text-lg font-bold text-zinc-900 dark:text-white">Sessions</p>
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold mb-1 text-zinc-900 dark:text-white transition-all">
-                      {DISCIPLINES[carouselIndex].name}
-                    </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 transition-all">
-                      {DISCIPLINES[carouselIndex].description}
-                    </p>
-                    <div className="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-300 transition-colors">
-                      <Play size={14} fill="currentColor" /> 
-                      Start Training
-                    </div>
+                    <ArrowRight className="text-zinc-400 group-hover:text-indigo-500 transition-colors" size={16} />
                   </div>
-                </div>
-              </Link>
-            </ScrollReveal>
-
-            {/* Recent AI Analyses */}
-            <ScrollReveal delay={100}>
-              <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
-                <div className="flex items-center justify-between mb-4 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <Brain className="text-indigo-500" size={18} />
-                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent AI Analyses</h3>
-                  </div>
-                  <Link href="/progress" className="text-xs text-indigo-500 hover:text-indigo-400">View All</Link>
-                </div>
-                
-                <div className="space-y-3">
-                  {recentAnalyses.length > 0 ? (
-                    recentAnalyses.map((analysis, i) => (
-                      <Link 
-                        key={analysis.id || i} 
-                        href={`/disciplines/${analysis.discipline || 'football'}?video=${analysis.video_id || ''}&analysis=${analysis.id}`}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer group"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
-                          <Video className="text-indigo-500" size={14} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-zinc-900 dark:text-white capitalize">{analysis.discipline} Analysis</p>
-                          <p className="text-[11px] text-zinc-500 line-clamp-2 mt-0.5">
-                            {analysis.analysis_text?.substring(0, 100)}...
-                          </p>
-                          <p className="text-[10px] text-zinc-400 mt-1">
-                            {new Date(analysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </p>
-                        </div>
-                        <ArrowRight className="text-zinc-400 group-hover:text-indigo-500 transition-colors flex-shrink-0" size={14} />
-                      </Link>
-                    ))
-                  ) : (
-                    <NoAnalysesEmpty />
-                  )}
-                </div>
+                </Link>
               </div>
             </ScrollReveal>
 
-            {/* Recommended Drills */}
-            <ScrollReveal delay={150}>
-              <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
-                <div className="flex items-center justify-between mb-4 relative z-10">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="text-yellow-500" size={18} />
-                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Recommended For You</h3>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
-                  {recommendedDrills.map((drill, i) => (
-                    <div key={drill.id} className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                      <p className="text-sm font-medium text-zinc-900 dark:text-white line-clamp-1">{drill.title}</p>
-                      <p className="text-[10px] text-zinc-500 mt-0.5">{drill.category}</p>
-                      <div className="flex items-center gap-1 mt-2 text-[10px] text-emerald-500 font-medium">
-                        <Zap size={10} /> +{drill.xp_reward} XP
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </ScrollReveal>
-            {/* All Disciplines - Inside left column to avoid overlap */}
-            <ScrollReveal delay={200} className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">All Disciplines</h3>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {DISCIPLINES.map((d) => (
-                  <Link key={d.slug} href={`/disciplines/${d.slug}`} className="block">
-                    <div 
-                      className={`spotlight-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all text-center`}
-                      onMouseMove={handleSpotlightMove}
-                    >
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+              {/* Left Column */}
+              <div className="lg:col-span-8 space-y-6">
+
+                {/* Continue Training - Auto-rotating carousel */}
+                <ScrollReveal delay={50} data-tour="continue-training">
+                  <Link
+                    href={`/disciplines/${DISCIPLINES[carouselIndex].slug}`}
+                    className="block group"
+                    onMouseEnter={() => setIsCarouselPaused(true)}
+                    onMouseLeave={() => setIsCarouselPaused(false)}
+                  >
+                    <div className="spotlight-card relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 p-6 shadow-xl hover:shadow-2xl transition-all border border-zinc-200 dark:border-zinc-700" onMouseMove={handleSpotlightMove}>
+                      <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-500/10 dark:from-indigo-600/20 to-transparent" />
+
+                      {/* Content with fade transition */}
                       <div className="relative z-10">
-                        <p className="text-sm font-medium text-zinc-900 dark:text-white">{d.name}</p>
-                        <p className="text-[10px] text-zinc-500 mt-1 line-clamp-1">{d.description}</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                            Start Training
+                          </p>
+                          {/* Carousel dots */}
+                          <div className="flex items-center gap-1.5">
+                            {DISCIPLINES.map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-1.5 h-1.5 rounded-full transition-all ${i === carouselIndex ? 'bg-indigo-500 dark:bg-indigo-400 w-3' : 'bg-zinc-300 dark:bg-zinc-600'}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-1 text-zinc-900 dark:text-white transition-all">
+                          {DISCIPLINES[carouselIndex].name}
+                        </h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 transition-all">
+                          {DISCIPLINES[carouselIndex].description}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-300 transition-colors">
+                          <Play size={14} fill="currentColor" />
+                          Start Training
+                        </div>
                       </div>
                     </div>
                   </Link>
-                ))}
-              </div>
-            </ScrollReveal>
-          </div>
+                </ScrollReveal>
 
-          {/* Right Sidebar */}
-          <div className="lg:col-span-4 space-y-6">
-            <Suspense fallback={<ChatSkeleton />}>
-              <AiChat />
-            </Suspense>
-            <Suspense fallback={<SessionPlanSkeleton />}>
-              <SessionPlan />
-            </Suspense>
-          </div>
-        </div>
-        </>
+                {/* AI Weekly Training Plan */}
+                <Suspense fallback={
+                  <div className="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 animate-pulse">
+                    <div className="h-5 w-40 bg-zinc-200 dark:bg-zinc-800 rounded mb-4" />
+                    <div className="space-y-2">
+                      {[1, 2, 3].map(i => <div key={i} className="h-12 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg" />)}
+                    </div>
+                  </div>
+                }>
+                  <WeeklyPlanSection />
+                </Suspense>
+
+                {/* Recent AI Analyses */}
+                <ScrollReveal delay={100}>
+                  <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
+                    <div className="flex items-center justify-between mb-4 relative z-10">
+                      <div className="flex items-center gap-2">
+                        <Brain className="text-indigo-500" size={18} />
+                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent AI Analyses</h3>
+                      </div>
+                      <Link href="/progress" className="text-xs text-indigo-500 hover:text-indigo-400">View All</Link>
+                    </div>
+
+                    <div className="space-y-3">
+                      {recentAnalyses.length > 0 ? (
+                        recentAnalyses.map((analysis, i) => (
+                          <Link
+                            key={analysis.id || i}
+                            href={`/disciplines/${analysis.discipline || 'football'}?video=${analysis.video_id || ''}&analysis=${analysis.id}`}
+                            className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer group"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+                              <Video className="text-indigo-500" size={14} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-zinc-900 dark:text-white capitalize">{analysis.discipline} Analysis</p>
+                              <p className="text-[11px] text-zinc-500 line-clamp-2 mt-0.5">
+                                {analysis.analysis_text?.substring(0, 100)}...
+                              </p>
+                              <p className="text-[10px] text-zinc-400 mt-1">
+                                {new Date(analysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </p>
+                            </div>
+                            <ArrowRight className="text-zinc-400 group-hover:text-indigo-500 transition-colors flex-shrink-0" size={14} />
+                          </Link>
+                        ))
+                      ) : (
+                        <NoAnalysesEmpty />
+                      )}
+                    </div>
+                  </div>
+                </ScrollReveal>
+
+                {/* Recommended Drills */}
+                <ScrollReveal delay={150}>
+                  <div data-tour="drills-section" className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-5 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
+                    <div className="flex items-center justify-between mb-4 relative z-10">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="text-yellow-500" size={18} />
+                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Recommended For You</h3>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10">
+                      {recommendedDrills.map((drill, i) => (
+                        <div key={drill.id} className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
+                          <p className="text-sm font-medium text-zinc-900 dark:text-white line-clamp-1">{drill.title}</p>
+                          <p className="text-[10px] text-zinc-500 mt-0.5">{drill.category}</p>
+                          <div className="flex items-center gap-1 mt-2 text-[10px] text-emerald-500 font-medium">
+                            <Zap size={10} /> +{drill.xp_reward} XP
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </ScrollReveal>
+                {/* All Disciplines - Inside left column to avoid overlap */}
+                <ScrollReveal delay={200} data-tour="disciplines-section" className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">All Disciplines</h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {DISCIPLINES.map((d) => (
+                      <Link key={d.slug} href={`/disciplines/${d.slug}`} className="block">
+                        <div
+                          className={`spotlight-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all`}
+                          onMouseMove={handleSpotlightMove}
+                        >
+                          <div className="relative z-10 flex items-center gap-3">
+                            <div className={`h-10 w-10 rounded-xl ${d.bgClass} flex items-center justify-center shrink-0`}>
+                              <d.Icon className={`${d.colorClass}`} size={20} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-zinc-900 dark:text-white">{d.name}</p>
+                              <p className="text-[10px] text-zinc-500 mt-0.5 line-clamp-1">{d.description}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </ScrollReveal>
+              </div>
+
+              {/* Right Sidebar */}
+              <div className="lg:col-span-4 space-y-6">
+                <Suspense fallback={<ChatSkeleton />}>
+                  <AiChat />
+                </Suspense>
+                <Suspense fallback={<SessionPlanSkeleton />}>
+                  <SessionPlan />
+                </Suspense>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </main>

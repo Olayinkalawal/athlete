@@ -386,3 +386,26 @@ FROM disciplines d,
 ) AS drill(title, description, category, duration, difficulty, xp, image)
 WHERE d.slug = 'american-football'
 ON CONFLICT DO NOTHING;
+
+-- Training Plans table (for AI-generated weekly plans)
+CREATE TABLE IF NOT EXISTS training_plans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    discipline VARCHAR(50) NOT NULL,
+    week_start DATE NOT NULL,
+    plan_data JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id, week_start)
+);
+
+-- RLS for training_plans
+ALTER TABLE training_plans ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own training plans" ON training_plans
+    FOR SELECT USING (auth.uid()::text = (SELECT clerk_id FROM users WHERE id = training_plans.user_id));
+
+CREATE POLICY "Users can insert their own training plans" ON training_plans
+    FOR INSERT WITH CHECK (auth.uid()::text = (SELECT clerk_id FROM users WHERE id = training_plans.user_id));
+
+CREATE POLICY "Users can update their own training plans" ON training_plans
+    FOR UPDATE USING (auth.uid()::text = (SELECT clerk_id FROM users WHERE id = training_plans.user_id));

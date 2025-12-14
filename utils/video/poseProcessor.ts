@@ -23,14 +23,12 @@ export async function processPoseData(
   frames: ExtractedFrame[],
   onProgress?: (current: number, total: number) => void
 ): Promise<PoseDataPoint[]> {
-  console.log(`Starting pose detection for ${frames.length} frames...`);
-  
   const poseDataPoints: PoseDataPoint[] = [];
 
   try {
     // Load MediaPipe
     const { Pose } = await loadMediaPipe();
-    
+
     // Initialize Pose detector
     const pose = new Pose({
       locateFile: (file: string) => {
@@ -42,32 +40,32 @@ export async function processPoseData(
       modelComplexity: 1,
       smoothLandmarks: false, // Don't smooth for batch processing
       enableSegmentation: false,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
+      minDetectionConfidence: 0.3, // Lowered from 0.5 for better detection
+      minTrackingConfidence: 0.3   // Lowered from 0.5 for better tracking
     });
 
     // Process each frame
     for (let i = 0; i < frames.length; i++) {
       const frame = frames[i];
-      
+
       try {
         const results = await new Promise<any>((resolve) => {
           pose.onResults((result) => {
             resolve(result);
           });
-          
+
           pose.send({ image: frame.canvas });
         });
 
         if (results.poseLandmarks && results.poseLandmarks.length > 0) {
           const landmarks = results.poseLandmarks as PoseLandmark[];
-          
+
           // Calculate confidence (average visibility)
           const confidence = landmarks.reduce((sum, lm) => sum + lm.visibility, 0) / landmarks.length;
-          
+
           // Calculate joint angles
           const angles = getJointAngles(landmarks);
-          
+
           if (angles) {
             poseDataPoints.push({
               timestamp: frame.timestamp,
@@ -76,11 +74,7 @@ export async function processPoseData(
               angles,
               confidence
             });
-            
-            console.log(`Frame ${i + 1}/${frames.length}: Pose detected (confidence: ${(confidence * 100).toFixed(1)}%)`);
           }
-        } else {
-          console.log(`Frame ${i + 1}/${frames.length}: No pose detected`);
         }
       } catch (error) {
         console.error(`Error processing frame ${i}:`, error);
@@ -94,10 +88,9 @@ export async function processPoseData(
 
     // Cleanup
     pose.close();
-    
-    console.log(`Pose detection complete. Found ${poseDataPoints.length}/${frames.length} valid poses`);
+
     return poseDataPoints;
-    
+
   } catch (error) {
     console.error('Pose processing failed:', error);
     throw error;
@@ -109,10 +102,10 @@ export async function processPoseData(
  */
 export function calculatePoseQualityScore(poseData: PoseDataPoint[]): number {
   if (poseData.length === 0) return 0;
-  
+
   // Average confidence across all frames
   const avgConfidence = poseData.reduce((sum, point) => sum + point.confidence, 0) / poseData.length;
-  
+
   // Convert to 0-100 scale
   return Math.round(avgConfidence * 100);
 }
@@ -160,11 +153,11 @@ export function formatPoseDataForAI(poseData: PoseDataPoint[], discipline: strin
   }
 
   const stats = getPoseStatistics(poseData);
-  
+
   // Football-specific terminology
-  const getFootballTerms = (angles: {avgKneeAngle: number, avgHipAngle: number, avgElbowAngle: number}) => {
+  const getFootballTerms = (angles: { avgKneeAngle: number, avgHipAngle: number, avgElbowAngle: number }) => {
     const terms: string[] = [];
-    
+
     // Analyze knee bend (plant leg)
     if (angles.avgKneeAngle < 100) {
       terms.push("Plant leg too bent - limits power transfer");
@@ -173,7 +166,7 @@ export function formatPoseDataForAI(poseData: PoseDataPoint[], discipline: strin
     } else {
       terms.push("Plant leg has optimal bend");
     }
-    
+
     // Analyze hip rotation (shooting power)
     if (angles.avgHipAngle < 50) {
       terms.push("Minimal hip rotation - 'pushing' the ball instead of 'striking'");
@@ -182,31 +175,31 @@ export function formatPoseDataForAI(poseData: PoseDataPoint[], discipline: strin
     } else {
       terms.push("Moderate hip rotation");
     }
-    
+
     // Analyze arm position (balance)
     if (angles.avgElbowAngle > 140) {
       terms.push("Arms too straight - check your balance");
     } else if (angles.avgElbowAngle >= 80 && angles.avgElbowAngle <= 110) {
       terms.push("Good arm positioning for balance");
     }
-    
+
     return terms;
   };
-  
+
   const technicalInsights = getFootballTerms(stats);
-  
+
   let summary = `TECHNIQUE ANALYSIS (${poseData.length} frames analyzed):\n\n`;
   summary += `KEY OBSERVATIONS:\n`;
   technicalInsights.forEach(insight => {
     summary += `• ${insight}\n`;
   });
-  
+
   summary += `\nFRAME-BY-FRAME BREAKDOWN:\n`;
   poseData.forEach((point) => {
     const timestamp = point.timestamp.toFixed(1);
     const knee = Math.round((point.angles.leftKnee + point.angles.rightKnee) / 2);
     const hip = Math.round((point.angles.leftHip + point.angles.rightHip) / 2);
-    
+
     // Translate to football terms
     let frameNote = "";
     if (knee < 100) {
@@ -216,11 +209,11 @@ export function formatPoseDataForAI(poseData: PoseDataPoint[], discipline: strin
     } else if (hip > 80) {
       frameNote = "excellent follow-through";
     }
-    
+
     summary += `${timestamp}s: ${frameNote || "technique check"}\n`;
   });
-  
+
   summary += `\nUSE THIS DATA: Reference specific timestamps and techniques in your feedback. Speak like a coach using football terminology, not medical/technical terms.`;
-  
+
   return summary;
 }

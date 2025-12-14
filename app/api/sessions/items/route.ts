@@ -6,7 +6,7 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 export async function GET() {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -60,7 +60,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -172,6 +172,18 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Get the item first to know its XP reward
+    const { data: existingItem } = await supabase
+      .from('session_items')
+      .select('*, sessions(id)')
+      .eq('id', id)
+      .eq('user_id', userData.id)
+      .single();
+
+    if (!existingItem) {
+      return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+    }
+
     // Update item (ensuring ownership)
     const { data: updatedItem, error } = await supabase
       .from('session_items')
@@ -186,6 +198,49 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Failed to update item' }, { status: 500 });
     }
 
+    // If checking (completing) an item, record XP in user_progress and update stats
+    if (checked && !existingItem.checked) {
+      const xpReward = existingItem.xp_reward || 20;
+
+      // Record in user_progress (for activity history)
+      await supabase
+        .from('user_progress')
+        .insert({
+          user_id: userData.id,
+          session_id: existingItem.session_id,
+          xp_earned: xpReward,
+          completed_at: new Date().toISOString()
+        });
+
+      // Update user_stats (upsert to create if not exists)
+      const { data: currentStats } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', userData.id)
+        .single();
+
+      if (currentStats) {
+        await supabase
+          .from('user_stats')
+          .update({
+            total_xp: (currentStats.total_xp || 0) + xpReward,
+            total_drills_completed: (currentStats.total_drills_completed || 0) + 1
+          })
+          .eq('user_id', userData.id);
+      } else {
+        await supabase
+          .from('user_stats')
+          .insert({
+            user_id: userData.id,
+            total_xp: xpReward,
+            total_drills_completed: 1,
+            total_sessions: 1
+          });
+      }
+    }
+
+    // If unchecking, we could optionally subtract XP (for now, we don't to prevent gaming)
+
     return NextResponse.json({ item: updatedItem });
 
   } catch (error) {
@@ -198,7 +253,7 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

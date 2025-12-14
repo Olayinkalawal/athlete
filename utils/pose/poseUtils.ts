@@ -14,7 +14,7 @@ export const POSE_LANDMARKS = {
   RIGHT_EAR: 8,
   MOUTH_LEFT: 9,
   MOUTH_RIGHT: 10,
-  
+
   // Upper body
   LEFT_SHOULDER: 11,
   RIGHT_SHOULDER: 12,
@@ -28,7 +28,7 @@ export const POSE_LANDMARKS = {
   RIGHT_INDEX: 20,
   LEFT_THUMB: 21,
   RIGHT_THUMB: 22,
-  
+
   // Lower body
   LEFT_HIP: 23,
   RIGHT_HIP: 24,
@@ -48,24 +48,58 @@ export const POSE_CONNECTIONS: [number, number][] = [
   [0, 1], [1, 2], [2, 3], [3, 7],
   [0, 4], [4, 5], [5, 6], [6, 8],
   [9, 10],
-  
+
   // Upper body
   [11, 12],  // Shoulders
   [11, 13], [13, 15],  // Left arm
   [15, 17], [15, 19], [15, 21],  // Left hand
   [12, 14], [14, 16],  // Right arm
   [16, 18], [16, 20], [16, 22],  // Right hand
-  
+
   // Torso
   [11, 23], [12, 24],  // Shoulders to hips
   [23, 24],  // Hips
-  
+
   // Left leg
   [23, 25], [25, 27], [27, 29], [27, 31],
-  
+
   // Right leg
   [24, 26], [26, 28], [28, 30], [28, 32],
 ];
+
+// Sport-specific key joints to highlight
+export const SPORT_KEY_JOINTS: Record<string, number[]> = {
+  football: [
+    POSE_LANDMARKS.LEFT_KNEE, POSE_LANDMARKS.RIGHT_KNEE,     // Plant knee
+    POSE_LANDMARKS.LEFT_HIP, POSE_LANDMARKS.RIGHT_HIP,       // Hip rotation
+    POSE_LANDMARKS.LEFT_ANKLE, POSE_LANDMARKS.RIGHT_ANKLE    // Foot positioning
+  ],
+  basketball: [
+    POSE_LANDMARKS.LEFT_ELBOW, POSE_LANDMARKS.RIGHT_ELBOW,   // Shooting form
+    POSE_LANDMARKS.LEFT_WRIST, POSE_LANDMARKS.RIGHT_WRIST,   // Release point
+    POSE_LANDMARKS.LEFT_SHOULDER, POSE_LANDMARKS.RIGHT_SHOULDER // Shot power
+  ],
+  boxing: [
+    POSE_LANDMARKS.LEFT_SHOULDER, POSE_LANDMARKS.RIGHT_SHOULDER, // Guard position
+    POSE_LANDMARKS.LEFT_ELBOW, POSE_LANDMARKS.RIGHT_ELBOW,   // Punch angles
+    POSE_LANDMARKS.LEFT_HIP, POSE_LANDMARKS.RIGHT_HIP        // Power generation
+  ],
+  mma: [
+    POSE_LANDMARKS.LEFT_SHOULDER, POSE_LANDMARKS.RIGHT_SHOULDER,
+    POSE_LANDMARKS.LEFT_HIP, POSE_LANDMARKS.RIGHT_HIP,
+    POSE_LANDMARKS.LEFT_KNEE, POSE_LANDMARKS.RIGHT_KNEE
+  ],
+  taekwondo: [
+    POSE_LANDMARKS.LEFT_HIP, POSE_LANDMARKS.RIGHT_HIP,       // Flexibility
+    POSE_LANDMARKS.LEFT_KNEE, POSE_LANDMARKS.RIGHT_KNEE,     // Kick height
+    POSE_LANDMARKS.LEFT_ANKLE, POSE_LANDMARKS.RIGHT_ANKLE    // Kick extension
+  ],
+  'american-football': [
+    POSE_LANDMARKS.LEFT_SHOULDER, POSE_LANDMARKS.RIGHT_SHOULDER, // Stance
+    POSE_LANDMARKS.LEFT_KNEE, POSE_LANDMARKS.RIGHT_KNEE,     // Athletic position
+    POSE_LANDMARKS.LEFT_HIP, POSE_LANDMARKS.RIGHT_HIP
+  ]
+};
 
 /**
  * Draw skeleton overlay on canvas
@@ -73,21 +107,40 @@ export const POSE_CONNECTIONS: [number, number][] = [
 export const drawSkeleton = (
   canvas: HTMLCanvasElement,
   landmarks: PoseLandmark[],
-  options = {
-    lineColor: '#00ff00',
-    lineWidth: 3,
-    pointColor: '#00ff00',
-    pointRadius: 5,
-    minVisibility: 0.5
-  }
+  options: {
+    lineColor?: string;
+    lineWidth?: number;
+    pointColor?: string;
+    pointRadius?: number;
+    minVisibility?: number;
+    clearCanvas?: boolean;
+    discipline?: string; // Sport-specific joint highlighting
+    highlightColor?: string;
+    highlightRadius?: number;
+  } = {}
 ) => {
+  const {
+    lineColor = '#00ff00',
+    lineWidth = 3,
+    pointColor = '#00ff00',
+    pointRadius = 5,
+    minVisibility = 0.5,
+    clearCanvas = true,
+    discipline,
+    highlightColor = '#ffff00', // Yellow for key joints
+    highlightRadius = 12
+  } = options;
+
   const ctx = canvas.getContext('2d');
   if (!ctx || !landmarks || landmarks.length === 0) return;
 
-  // Clear previous frame
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Get key joints for this sport
+  const keyJoints = discipline ? (SPORT_KEY_JOINTS[discipline] || []) : [];
 
-  const { lineColor, lineWidth, pointColor, pointRadius, minVisibility } = options;
+  // Only clear canvas for real-time overlay (not when drawing on video frames for AI)
+  if (clearCanvas) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   // Draw connections (bones)
   ctx.strokeStyle = lineColor;
@@ -107,15 +160,19 @@ export const drawSkeleton = (
   });
 
   // Draw joints (circles)
-  ctx.fillStyle = pointColor;
-
-  landmarks.forEach((point) => {
+  landmarks.forEach((point, index) => {
     if (point && point.visibility > minVisibility) {
+      const isKeyJoint = keyJoints.includes(index);
+
+      // Draw key joints larger and in highlight color
+      ctx.fillStyle = isKeyJoint ? highlightColor : pointColor;
+      const radius = isKeyJoint ? highlightRadius : pointRadius;
+
       ctx.beginPath();
       ctx.arc(
         point.x * canvas.width,
         point.y * canvas.height,
-        pointRadius,
+        radius,
         0,
         2 * Math.PI
       );
@@ -179,7 +236,7 @@ export const getJointAngles = (landmarks: PoseLandmark[]): JointAngles | null =>
   if (!landmarks || landmarks.length < 33) return null;
 
   const { LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE,
-          RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE } = POSE_LANDMARKS;
+    RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE } = POSE_LANDMARKS;
 
   // Only calculate if landmarks are visible
   const isVisible = (idx: number) => landmarks[idx] && landmarks[idx].visibility > 0.5;
@@ -188,31 +245,31 @@ export const getJointAngles = (landmarks: PoseLandmark[]): JointAngles | null =>
     leftElbow: isVisible(LEFT_SHOULDER) && isVisible(LEFT_ELBOW) && isVisible(LEFT_WRIST)
       ? calculateAngle(landmarks[LEFT_SHOULDER], landmarks[LEFT_ELBOW], landmarks[LEFT_WRIST])
       : 0,
-    
+
     rightElbow: isVisible(RIGHT_SHOULDER) && isVisible(RIGHT_ELBOW) && isVisible(RIGHT_WRIST)
       ? calculateAngle(landmarks[RIGHT_SHOULDER], landmarks[RIGHT_ELBOW], landmarks[RIGHT_WRIST])
       : 0,
-    
+
     leftKnee: isVisible(LEFT_HIP) && isVisible(LEFT_KNEE) && isVisible(LEFT_ANKLE)
       ? calculateAngle(landmarks[LEFT_HIP], landmarks[LEFT_KNEE], landmarks[LEFT_ANKLE])
       : 0,
-    
+
     rightKnee: isVisible(RIGHT_HIP) && isVisible(RIGHT_KNEE) && isVisible(RIGHT_ANKLE)
       ? calculateAngle(landmarks[RIGHT_HIP], landmarks[RIGHT_KNEE], landmarks[RIGHT_ANKLE])
       : 0,
-    
+
     leftShoulder: isVisible(LEFT_ELBOW) && isVisible(LEFT_SHOULDER) && isVisible(LEFT_HIP)
       ? calculateAngle(landmarks[LEFT_ELBOW], landmarks[LEFT_SHOULDER], landmarks[LEFT_HIP])
       : 0,
-    
+
     rightShoulder: isVisible(RIGHT_ELBOW) && isVisible(RIGHT_SHOULDER) && isVisible(RIGHT_HIP)
       ? calculateAngle(landmarks[RIGHT_ELBOW], landmarks[RIGHT_SHOULDER], landmarks[RIGHT_HIP])
       : 0,
-    
+
     leftHip: isVisible(LEFT_SHOULDER) && isVisible(LEFT_HIP) && isVisible(LEFT_KNEE)
       ? calculateAngle(landmarks[LEFT_SHOULDER], landmarks[LEFT_HIP], landmarks[LEFT_KNEE])
       : 0,
-    
+
     rightHip: isVisible(RIGHT_SHOULDER) && isVisible(RIGHT_HIP) && isVisible(RIGHT_KNEE)
       ? calculateAngle(landmarks[RIGHT_SHOULDER], landmarks[RIGHT_HIP], landmarks[RIGHT_KNEE])
       : 0,

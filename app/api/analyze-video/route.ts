@@ -44,73 +44,92 @@ Analyze the technique, movement quality, form, and effort. Look for:
 
 Give conversational coaching feedback using proper sport terminology. End with 2-3 specific actionable tips to improve performance.`;
 
-function getAnalysisPrompt(discipline: string): string {
+function getAnalysisPrompt(discipline: string, hasPoseData: boolean = false): string {
   const basePrompt = ANALYSIS_PROMPTS[discipline] || DEFAULT_PROMPT;
-  return `${basePrompt}
 
-IMPORTANT FORMATTING RULES:
-- Write in a natural, conversational tone like you're talking directly to the athlete
-- Do NOT use markdown headers (###), bullet points, or numbered lists
-- Use short paragraphs separated by line breaks
-- Include 1-2 emojis naturally in the text
-- Keep it concise: 100-150 words max
-- End with "Quick tips:" followed by 2-3 actionable suggestions in plain text
-- Address the athlete as "you" throughout`;
+  // Add skeleton awareness if pose data is present
+  const skeletonContext = hasPoseData ? `
+CRITICAL - POSE SKELETON OVERLAY VISIBLE:
+The images contain a GREEN SKELETON overlay with PINK JOINT DOTS drawn on the athlete. You MUST:
+1. START your analysis by mentioning what you observe in the skeleton positioning
+2. Reference specific joints you can see (knees, hips, shoulders, elbows, ankles)
+3. Describe the alignment or angle issues visible in the green lines
+4. Compare how the skeleton changes position across different frames
+
+Example phrases to use:
+- "Looking at your skeleton overlay, I can see your knee angle is..."
+- "The joint markers show your shoulders are..."
+- "Across the frames, the skeleton shows your hip position..."
+
+` : '';
+
+  return `${basePrompt}
+${skeletonContext}
+FORMATTING RULES:
+- Write conversationally to the athlete
+- No markdown headers or bullet points
+- Short paragraphs with line breaks
+- 1-2 emojis naturally placed
+- 120-180 words max
+- End with "Quick tips:" and 2-3 suggestions
+- Address as "you"`;
 }
 
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ 
-        error: 'OpenAI API key not configured' 
+      return NextResponse.json({
+        error: 'OpenAI API key not configured'
       }, { status: 503 });
     }
 
     const body = await request.json();
-    const { 
-      videoUrl, 
-      videoId, 
-      frameUrls, 
+    const {
+      videoUrl,
+      videoId,
+      frameUrls,
       discipline = 'football',
       poseDataFormatted  // NEW: Pose data from client
     } = body;
 
     if (!frameUrls || frameUrls.length === 0) {
-      return NextResponse.json({ 
-        error: 'No frames provided for analysis' 
+      return NextResponse.json({
+        error: 'No frames provided for analysis'
       }, { status: 400 });
     }
 
     // Build the message content with frame images
+    // Use "high" detail for images with pose skeleton overlays so GPT-4 can see joints
     const imageContent = frameUrls.map((url: string) => ({
       type: "image_url" as const,
       image_url: {
         url: url,
-        detail: "low" as const
+        detail: "high" as const  // Changed from "low" to see skeleton details
       }
     }));
 
     // Enhance prompt with pose data if available
-    let enhancedPrompt = getAnalysisPrompt(discipline);
-    
+    const hasPoseData = !!poseDataFormatted;
+    let enhancedPrompt = getAnalysisPrompt(discipline, hasPoseData);
+
     if (poseDataFormatted) {
-      enhancedPrompt += `\n\nPOSE DETECTION DATA:\n${poseDataFormatted}\n\nUse this numerical data to provide specific, measurable feedback. Reference exact timestamps and angle measurements in your analysis.`;
+      enhancedPrompt += `\n\nPOSE DETECTION DATA:\n${poseDataFormatted}\n\nUse this numerical data along with the visible skeleton overlay in the images to provide specific, measurable feedback about joint angles and body positioning.`;
     }
 
     // Call GPT-4 Vision with enhanced prompt
     const openai = getOpenAI();
     if (!openai) {
-      return NextResponse.json({ 
-        error: 'OpenAI not available' 
+      return NextResponse.json({
+        error: 'OpenAI not available'
       }, { status: 503 });
     }
-    
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -176,8 +195,8 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error('Video analysis error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to analyze video' 
+    return NextResponse.json({
+      error: error.message || 'Failed to analyze video'
     }, { status: 500 });
   }
 }
@@ -186,7 +205,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

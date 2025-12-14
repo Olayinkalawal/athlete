@@ -47,7 +47,7 @@ export default function ProgressPage() {
         setIsLoading(false);
       }
     };
-    
+
     fetchProgress();
   }, [days]);
 
@@ -67,10 +67,10 @@ export default function ProgressPage() {
               <Skeleton className="h-8 w-20 rounded-lg" />
             </div>
           </div>
-          
+
           {/* Level card skeleton */}
           <Skeleton className="h-32 w-full rounded-2xl" />
-          
+
           {/* Stats grid skeleton */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCardSkeleton />
@@ -78,7 +78,7 @@ export default function ProgressPage() {
             <StatCardSkeleton />
             <StatCardSkeleton />
           </div>
-          
+
           {/* Charts skeleton */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 p-6">
@@ -103,9 +103,9 @@ export default function ProgressPage() {
   const levelProgress = ((100 - stats.xpToNextLevel) / 100) * 100;
 
   return (
-    <main className="flex-1 overflow-y-auto h-full bg-zinc-50 dark:bg-black custom-scrollbar">
+    <main id="main-scroll" className="flex-1 overflow-y-auto h-full bg-zinc-50 dark:bg-black custom-scrollbar">
       <Header />
-      
+
       <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-6">
         {/* Page Title */}
         <ScrollReveal>
@@ -114,16 +114,16 @@ export default function ProgressPage() {
               <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Your Progress</h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">Track your training journey and improvements</p>
             </div>
-            
+
             {/* Time Range Selector */}
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={() => setDays(7)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${days === 7 ? 'bg-indigo-600 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
               >
                 7 Days
               </button>
-              <button 
+              <button
                 onClick={() => setDays(30)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${days === 30 ? 'bg-indigo-600 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
               >
@@ -134,7 +134,7 @@ export default function ProgressPage() {
         </ScrollReveal>
 
         {/* Level Card */}
-        <ScrollReveal delay={50}>
+        <ScrollReveal delay={50} data-tour="progress-level-card">
           <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-600/20">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -150,10 +150,10 @@ export default function ProgressPage() {
                 <p className="text-white/70 text-sm">{stats.xpToNextLevel} XP to Level {stats.level + 1}</p>
               </div>
             </div>
-            
+
             {/* XP Progress Bar */}
             <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-white rounded-full transition-all duration-500"
                 style={{ width: `${levelProgress}%` }}
               />
@@ -162,7 +162,7 @@ export default function ProgressPage() {
         </ScrollReveal>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div data-tour="progress-stats-grid" className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <ScrollReveal delay={100}>
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center gap-3 mb-2 relative z-10">
@@ -174,7 +174,7 @@ export default function ProgressPage() {
               <p className="text-xs text-zinc-500 relative z-10">Day Streak</p>
             </div>
           </ScrollReveal>
-          
+
           <ScrollReveal delay={150}>
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center gap-3 mb-2 relative z-10">
@@ -186,7 +186,7 @@ export default function ProgressPage() {
               <p className="text-xs text-zinc-500 relative z-10">Drills Completed</p>
             </div>
           </ScrollReveal>
-          
+
           <ScrollReveal delay={200}>
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center gap-3 mb-2 relative z-10">
@@ -198,7 +198,7 @@ export default function ProgressPage() {
               <p className="text-xs text-zinc-500 relative z-10">Minutes Trained</p>
             </div>
           </ScrollReveal>
-          
+
           <ScrollReveal delay={250}>
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center gap-3 mb-2 relative z-10">
@@ -214,11 +214,11 @@ export default function ProgressPage() {
 
         {/* Weekly Goal Card */}
         {data?.weeklyProgress && (
-          <ScrollReveal delay={275} className="mt-6 mb-2">
+          <ScrollReveal delay={275} data-tour="progress-weekly-goal" className="mt-6 mb-2">
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
                     <Calendar className="text-pink-500" size={24} />
                   </div>
                   <div>
@@ -230,10 +230,10 @@ export default function ProgressPage() {
                   <span className="text-3xl font-bold text-zinc-900 dark:text-white">{data.weeklyProgress.percentage}%</span>
                 </div>
               </div>
-              
+
               {/* Progress Bar */}
               <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden relative z-10">
-                <div 
+                <div
                   className="h-full bg-gradient-to-r from-pink-500 to-rose-500 rounded-full transition-all duration-1000 ease-out"
                   style={{ width: `${data.weeklyProgress.percentage}%` }}
                 />
@@ -245,7 +245,7 @@ export default function ProgressPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* XP Chart */}
-          <ScrollReveal delay={300}>
+          <ScrollReveal delay={300} data-tour="progress-xp-chart">
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center justify-between mb-6 relative z-10">
                 <div>
@@ -254,43 +254,43 @@ export default function ProgressPage() {
                 </div>
                 <TrendingUp className="text-indigo-500" size={20} />
               </div>
-              
+
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data?.dailyXp || []}>
                     <defs>
                       <linearGradient id="xpGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.3} />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       tick={{ fill: '#71717a', fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <YAxis 
+                    <YAxis
                       tick={{ fill: '#71717a', fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#18181b', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#18181b',
                         border: '1px solid #27272a',
                         borderRadius: '8px',
                         fontSize: '12px'
                       }}
                       labelStyle={{ color: '#fff' }}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="xp" 
-                      stroke="#6366f1" 
+                    <Area
+                      type="monotone"
+                      dataKey="xp"
+                      stroke="#6366f1"
                       strokeWidth={2}
-                      fill="url(#xpGradient)" 
+                      fill="url(#xpGradient)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -299,7 +299,7 @@ export default function ProgressPage() {
           </ScrollReveal>
 
           {/* Recent Activity */}
-          <ScrollReveal delay={350}>
+          <ScrollReveal delay={350} data-tour="progress-activity">
             <div className="spotlight-card bg-white dark:bg-zinc-900/80 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800" onMouseMove={handleSpotlightMove}>
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <div>
@@ -308,7 +308,7 @@ export default function ProgressPage() {
                 </div>
                 <Calendar className="text-zinc-400" size={20} />
               </div>
-              
+
               <div className="space-y-3 max-h-[200px] overflow-y-auto custom-scrollbar">
                 {data?.recentActivity && data.recentActivity.length > 0 ? (
                   data.recentActivity.map((activity, i) => (
@@ -320,8 +320,8 @@ export default function ProgressPage() {
                         <div>
                           <p className="text-sm font-medium text-zinc-900 dark:text-white">{activity.title}</p>
                           <p className="text-[10px] text-zinc-500">
-                            {new Date(activity.completedAt).toLocaleDateString('en-US', { 
-                              month: 'short', 
+                            {new Date(activity.completedAt).toLocaleDateString('en-US', {
+                              month: 'short',
                               day: 'numeric',
                               hour: 'numeric',
                               minute: '2-digit'

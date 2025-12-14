@@ -33,11 +33,11 @@ export const usePoseDetection = () => {
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     const initializePose = async () => {
       try {
         console.log('Starting MediaPipe initialization...');
-        
+
         // Set a timeout for initialization
         const timeout = new Promise((_, reject) => {
           timeoutId = setTimeout(() => {
@@ -50,7 +50,7 @@ export const usePoseDetection = () => {
           console.log('Loading MediaPipe modules...');
           const { Pose } = await loadMediaPipe();
           console.log('MediaPipe modules loaded');
-          
+
           console.log('Creating Pose instance...');
           // Initialize MediaPipe Pose
           const pose = new Pose({
@@ -83,7 +83,7 @@ export const usePoseDetection = () => {
               frameCountRef.current++;
               const now = Date.now();
               const elapsed = now - lastTimeRef.current;
-              
+
               if (elapsed >= 1000) {
                 setFps(Math.round((frameCountRef.current * 1000) / elapsed));
                 frameCountRef.current = 0;
@@ -102,7 +102,7 @@ export const usePoseDetection = () => {
         setIsLoading(false); // Mark as ready after setup
         clearTimeout(timeoutId);
         console.log('Initialization complete!');
-        
+
       } catch (err) {
         console.error('MediaPipe initialization error:', err);
         setError(err instanceof Error ? err.message : 'Failed to initialize pose detection');
@@ -129,7 +129,7 @@ export const usePoseDetection = () => {
 
     try {
       const { Camera } = await loadMediaPipe();
-      
+
       const camera = new Camera(videoElement, {
         onFrame: async () => {
           if (poseRef.current) {
@@ -154,12 +154,26 @@ export const usePoseDetection = () => {
     }
   }, []);
 
+  // Process a single frame from a video element
+  const processVideoFrame = useCallback(async (videoElement: HTMLVideoElement) => {
+    if (!poseRef.current) {
+      return;
+    }
+
+    try {
+      await poseRef.current.send({ image: videoElement });
+    } catch (err) {
+      console.error('Error processing video frame:', err);
+    }
+  }, []);
+
   return {
     results,
     isLoading,
     error,
     fps,
     startCamera,
-    stopCamera
+    stopCamera,
+    processVideoFrame
   };
 };

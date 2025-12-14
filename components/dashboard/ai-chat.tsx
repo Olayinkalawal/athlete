@@ -158,7 +158,7 @@ export default function AiChat() {
   };
 
   return (
-    <ScrollReveal className={`rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 flex flex-col shadow-sm relative overflow-hidden transition-all duration-300 ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-full'}`}>
+    <ScrollReveal data-tour="ai-coach" className={`rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/20 flex flex-col shadow-sm relative overflow-hidden transition-all duration-300 ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-full'}`}>
       {isExpanded && <div className="fixed inset-0 bg-black/60 -z-10" onClick={() => setIsExpanded(false)} />}
 
       {/* Header */}
@@ -211,8 +211,8 @@ export default function AiChat() {
               {msg.role === 'bot' ? <Bot size={14} /> : <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400">ME</span>}
             </div>
             <div className={`p-3 rounded-2xl shadow-sm max-w-[85%] leading-relaxed ${msg.role === 'bot'
-                ? 'bg-zinc-200 dark:bg-zinc-800 rounded-tl-none border border-zinc-300 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300'
-                : 'bg-indigo-600 text-white rounded-tr-none shadow-md'
+              ? 'bg-zinc-200 dark:bg-zinc-800 rounded-tl-none border border-zinc-300 dark:border-zinc-700/50 text-zinc-700 dark:text-zinc-300'
+              : 'bg-indigo-600 text-white rounded-tr-none shadow-md'
               }`}>
               {msg.text}
             </div>

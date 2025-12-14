@@ -9,13 +9,14 @@ import { toast } from "sonner";
 import { DISCIPLINES } from "@/lib/data";
 import { useTheme } from "@/components/providers/theme-provider";
 import { handleSpotlightMove } from "@/hooks/use-spotlight";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { useUi } from "@/components/providers/ui-provider";
 import Image from "next/image";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const { sessionStats } = useUi();
 
   // Calculate level from XP (100 XP per level)
@@ -37,7 +38,6 @@ export default function SettingsPage() {
   const handleThemeToggle = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    toast.success(`Switched to ${newTheme} mode`);
   };
 
   const handleSave = async () => {
@@ -342,6 +342,7 @@ export default function SettingsPage() {
 
 // Danger Zone Component
 function DangerZone() {
+  const { signOut } = useClerk();
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = React.useState('');
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -391,7 +392,9 @@ function DangerZone() {
       }
 
       toast.success('Account deleted. Redirecting...');
-      window.location.href = '/landing';
+
+      // Sign out immediately and redirect to landing page
+      await signOut({ redirectUrl: '/landing' });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete account');
       setIsDeleting(false);
